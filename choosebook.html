@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Haven - Choose Your Option</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+        }
+        .input-box, .file-upload {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .book-details {
+            margin-top: 20px;
+        }
+        .book-cover {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script>
+        let uploadedFile = null;
+
+        function showSuccessMessage(event) {
+            uploadedFile = event.target.files[0];
+            if (uploadedFile) {
+                document.getElementById('success-message').classList.remove('hidden');
+                document.getElementById('start-reading-btn').classList.remove('hidden');
+                fetchBookDetails(uploadedFile);
+                document.getElementById('file-upload-section').classList.add('hidden');
+                document.getElementById('book-details').classList.remove('hidden');
+            }
+        }
+
+        async function fetchBookDetails(file) {
+            const fileReader = new FileReader();
+            
+            fileReader.onload = async function() {
+                const pdfData = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(pdfData).promise;
+
+                // Get number of pages
+                const totalPages = pdf.numPages;
+
+                // Display total pages
+                document.getElementById('total-pages').innerText = `Total Pages: ${totalPages}`;
+
+                // Extract cover image (if available in the PDF)
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 1 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                const context = canvas.getContext('2d');
+                await page.render({ canvasContext: context, viewport }).promise;
+
+                // Convert canvas to image
+                const imgSrc = canvas.toDataURL();
+                document.getElementById('book-cover').src = imgSrc;
+
+                // Get metadata
+                const metadata = await pdf.getMetadata();
+                document.getElementById('book-author').innerText = `Author Name: ${metadata.info.Author || 'Unknown Author'}`;
+                document.getElementById('book-title').innerText = `Title: ${metadata.info.Title || 'Unknown Title'}`;
+                
+                // You can also store this information if needed for later use
+            };
+
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        function openUploadedFile() {
+            if (uploadedFile) {
+                const fileURL = URL.createObjectURL(uploadedFile);
+                window.open(fileURL, '_blank');
+            }
+        }
+
+        function showButton(inputId, buttonId) {
+            let input = document.getElementById(inputId);
+            let button = document.getElementById(buttonId);
+            if (input.value.trim() !== "") {
+                button.classList.remove('hidden');
+            } else {
+                button.classList.add('hidden');
+            }
+        }
+
+        function redirectToCategory() {
+            let category = document.getElementById('category-select').value;
+            if (category === 'fictional') {
+                window.location.href = 'fiction.html';
+            } else if (category === 'non-fictional') {
+                window.location.href = 'nonfiction.html';
+            }
+        }
+
+        function searchBook() {
+            const bookName = document.getElementById('search-book-name').value.trim();
+            const authorName = document.getElementById('search-author-name').value.trim();
+
+            if (bookName || authorName) {
+                // Here you can implement the search functionality
+                // For now, we'll just display a message
+                alert(`Searching for book: ${bookName} by author: ${authorName}`);
+                // You can replace the alert with an actual search function
+            } else {
+                alert('Please enter a book name or author name to search.');
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Choose Your Option</h2>
+        
+        <label>Select Category:</label>
+        <select id="category-select" class="input-box" onchange="redirectToCategory()">
+            <option value="" disabled selected>Choose Interest</option>
+            <option value="fictional">Fictional</option>
+            <option value="non-fictional">Non-Fictional</option>
+        </select>
+
+        <label>Search Book by Name and Author:</label>
+        <input type="text" id="search-book-name" class="input-box" placeholder="Enter book or Author Name" onkeyup="showButton('search-book-input', 'search-book-name')">
+
+       <button id="search-book-btn" class="btn hidden" onclick="searchBook()">Search Book</button>
+<br>
+<br>
+        <label>Find the Right Book:</label>
+        <input type="text" id="find-book-input" class="input-box" placeholder="Enter your question or problem" onkeyup="showButton('find-book-input', 'find-book-btn')">
+        <button id="find-book-btn" class="btn hidden">Find Book</button>
+
+        <br>
+        <br>
+         <label>Learn Something New:</label>
+        <input type="text" id="learn-input" class="input-box" placeholder="Enter niche or category" onkeyup="showButton('learn-input', 'learn-btn')">
+        <button id="learn-btn" class="btn hidden">Learn</button>
+        <br>
+        <br>
+        <div id="file-upload-section">
+          <label>Upload Your Book (PDF, Word, Document):</label>
+          <input type="file" class="file-upload" accept=".pdf,.doc,.docx" onchange="showSuccessMessage(event)">
+          <p id="success-message" class="hidden" style="color: green;">Upload successful! Click 'Start Reading' to continue.</p>
+          <button id="start-reading-btn" class="btn hidden" onclick="openUploadedFile()">Start Reading</button>
+      </div>
+
+      <!-- Book Details Section -->
+      <div id="book-details" class="book-details hidden">
+          <h3 id="book-title">Title:</h3>
+          <h4 id="book-author">Author Name:</h4>
+          <img id="book-cover" class="book-cover hidden" alt="Book Cover">
+          <p id="total-pages"></p>
+      </div>
+
+    </div>
+</body>
+</html>

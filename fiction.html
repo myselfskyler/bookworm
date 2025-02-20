@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fictional Books</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        .container {
+            width: 80%;
+            max-width: 1000px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .book-card {
+            background: white;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 30%;
+            min-width: 250px;
+            cursor: pointer; /* Change cursor to indicate it's clickable */
+        }
+        .book-card img {
+            max-width: 100%;
+            height: auto;
+        }
+        .book-card input[type="file"] {
+            margin-top: 10px;
+        }
+        .book-card .upload-hidden {
+            display: none; /* Hide the upload button */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+</head>
+<body>
+    <h2>Fictional Books</h2>
+    <div class="container" id="book-list">
+        <div class="book-card" onclick="openFile(this)">
+            <input type="file" accept=".pdf" onchange="handleFileUpload(this)" />
+            <img src="" alt="Cover Image" class="cover-image" style="display:none;">
+            <h3 class="book-title">Book Title</h3>
+            <p class="book-author">Author Name</p>
+            <p class="total-pages">Total Pages: <span></span></p>
+        </div>
+        <div class="book-card" onclick="openFile(this)">
+            <input type="file" accept=".pdf" onchange="handleFileUpload(this)" />
+            <img src="" alt="Cover Image" class="cover-image" style="display:none;">
+            <h3 class="book-title">Book Title</h3>
+            <p class="book-author">Author Name</p>
+            <p class="total-pages">Total Pages: <span></span></p>
+        </div>
+        <div class="book-card" onclick="openFile(this)">
+            <input type="file" accept=".pdf" onchange="handleFileUpload(this)" />
+            <img src="" alt="Cover Image" class="cover-image" style="display:none;">
+            <h3 class="book-title">Book Title</h3>
+            <p class="book-author">Author Name</p>
+            <p class="total-pages">Total Pages: <span></span></p>
+        </div>
+        <div class="book-card" onclick="openFile(this)">
+            <input type="file" accept=".pdf" onchange="handleFileUpload(this)" />
+            <img src="" alt="Cover Image" class="cover-image" style="display:none;">
+            <h3 class="book-title">Book Title</h3>
+            <p class="book-author">Author Name</p>
+            <p class="total-pages">Total Pages: <span></span></p>
+        </div>
+        <!-- Repeat book-card as needed -->
+    </div>
+
+    <script>
+        async function handleFileUpload(input) {
+            const file = input.files[0];
+            const card = input.parentElement;
+
+            if (file && file.type === "application/pdf") {
+                const fileReader = new FileReader();
+
+                fileReader.onload = async function() {
+                    const pdfData = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(pdfData).promise;
+
+                    // Get number of pages
+                    const totalPages = pdf.numPages;
+
+                    // Display total pages
+                    card.querySelector('.total-pages span').innerText = totalPages;
+
+                    // Optionally extract cover image (if available in the PDF)
+                    const page = await pdf.getPage(1);
+                    const viewport = page.getViewport({scale: 1});
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+
+                    const context = canvas.getContext('2d');
+                    await page.render({canvasContext: context, viewport: viewport}).promise;
+
+                    // Convert canvas to image
+                    const imgSrc = canvas.toDataURL();
+                    card.querySelector('.cover-image').src = imgSrc;
+                    card.querySelector('.cover-image').style.display = 'block';
+
+                    // Optionally set title and author (if available in the PDF metadata)
+                    const metadata = await pdf.getMetadata();
+                    card.querySelector('.book-title').innerText = metadata.info.Title || 'Unknown Title';
+                    card.querySelector('.book-author').innerText = metadata.info.Author || 'Unknown Author';
+                };
+
+                fileReader.readAsArrayBuffer(file);
+
+                // Hide the file upload button
+                input.classList.add('upload-hidden');
+                // Store the file for opening later
+                card.file = file;
+
+
+            } else {
+                alert("Please upload a valid PDF file.");
+            }
+        }
+
+        function openFile(card) {
+            if (card.file) {
+                const fileURL = URL.createObjectURL(card.file);
+                window.open(fileURL, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Haven - Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 350px;
+        }
+        .input-box {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .links {
+            margin-top: 10px;
+        }
+        .links a {
+            text-decoration: none;
+            color: #007BFF;
+            margin: 5px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        function showRegistrationForm() {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('register-container').classList.remove('hidden');
+        }
+
+        function handleFormSubmission(formId) {
+            const form = document.getElementById(formId);
+            const scriptURL = "https://script.google.com/macros/s/AKfycbygIgbm8xWZtdBtmn2FnR-QMoEnNGne8PAGktI2xDd4nb-jtLoMNvG_4qvA8mf6naBI/exec";
+
+            form.addEventListener("submit", e => {
+                e.preventDefault();
+                fetch(scriptURL, { method: "POST", body: new FormData(form) })
+                    .then(response => alert("Account created successfully!")) // Updated success message
+                    .then(() => { window.location.href = 'choosebook.html'; }) // Redirect to choosebook.html
+                    .catch(error => console.error("Error!", error.message));
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            handleFormSubmission("login-container");
+            handleFormSubmission("register-container");
+        });
+    </script>
+</head>
+<body>
+    <form id="login-container" class="container" action="#" method="POST">
+        <h2>Book Haven</h2>
+        <input type="text" class="input-box" name="username" placeholder="Username" required>
+        <input type="password" class="input-box" name="password" placeholder="Password" required>
+        <button class="btn" type="submit">Login</button>
+        <div class="links">
+            <a href="#">Forgot Password?</a> | 
+            <a href="#" onclick="showRegistrationForm()">Create a New Account</a>
+        </div>
+    </form>
+
+    <form id="register-container" class="container hidden" action="#" method="POST">
+        <h2>Create New Account</h2>
+        <input type="text" class="input-box" name="username" id="username" placeholder="Username" pattern="^[a-zA-Z0-9]+$" title="Username must not contain special characters" required>
+        <p id="username-status"></p>
+        <input type="text" class="input-box" name="full_name" placeholder="Full Name" required>
+        <input type="number" class="input-box" name="age" placeholder="Age" required>
+        <input type="text" class="input-box" name="profession" placeholder="Profession" required>
+        <input type="email" class="input-box" name="email" placeholder="Email" required>
+        <textarea class="input-box" name="reason" placeholder="Why did you choose this app?" required></textarea>
+        <button class="btn" type="submit">Create Account</button>
+    </form>
+</body>
+</html>
