@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload Your Book</title>
+</head>
+<body>
+  <h1>Upload Your Book</h1>
+
+  <input type="file" id="fileInput" accept=".pdf, .word, .docx" required><br><br>
+  <input type="email" id="uploadedByEmail" placeholder="Your Email (required)" required><br><br>
+  <button id="uploadButton">Upload</button>
+
+  <div id="message"></div>
+  <div id="successMessage" style="display: none; color: green;"></div>
+  <div id="bookCounter">Total Books: 0</div>
+  <script type="module">
+    import { uploadFile, showMessage } from './scripts/fileUploadHandler.js';
+  
+    const fileInput = document.getElementById("fileInput");
+    const uploadedByEmailInput = document.getElementById("uploadedByEmail");
+    const uploadButton = document.getElementById("uploadButton");
+  
+    uploadButton.addEventListener("click", () => {
+      const file = fileInput.files[0];
+      const uploadedByEmail = uploadedByEmailInput.value;
+  
+      if (!file || !uploadedByEmail) {
+        showMessage("Please fill in all the required fields", "error");
+        return;
+      }
+  
+      uploadFile(file, file.name, "Unknown", 0, uploadedByEmail, (success, errorMessage) => {
+        if (success) {
+          showMessage("File uploaded successfully!", "success");
+          fileInput.value = ''; // Clear file input
+          uploadedByEmailInput.value = ''; // Clear email input
+          uploadButton.textContent = "Upload Another";
+        } else {
+          showMessage(errorMessage || "File upload failed.", "error");
+        }
+      });
+    });
+  </script>
+  <script>"./fileUploadHandler.js"</script>
+
+</body>
+</html>

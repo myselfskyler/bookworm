@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Book Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; flex-direction: column; align-items: center; margin: 20px; }
+        .container { width: 80%; max-width: 1000px; display: flex; flex-wrap: wrap; justify-content: space-around; }
+        .book-card { background: white; padding: 15px; margin: 15px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); text-align: center; width: 30%; min-width: 250px; cursor: pointer; }
+        .book-card img { max-width: 100%; height: auto; }
+        .upload-btn { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 20px 0; font-size: 16px; }
+        .upload-btn:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <h2>Admin - Book Management</h2>
+    <div class="container" id="book-list"></div>
+    <button class="upload-btn" onclick="window.location.href='upload-own.html'">Upload New Book</button>
+    <p><a href="index.html">Switch to User View</a></p>
+
+    <script>
+        function loadBooks() {
+            fetch('https://script.google.com/macros/s/AKfycbwiMHKaJzcZ5YATXnAeIw_bUkQ64GF8P7GyrhUsdkFf2I5CiktdlilkPTKWrAGkQ7c7/exec')
+                .then(response => response.json())
+                .then(books => {
+                    const bookList = document.getElementById('book-list');
+                    bookList.innerHTML = '';
+                    books.forEach(book => {
+                        const card = document.createElement('div');
+                        card.className = 'book-card';
+                        card.innerHTML = `
+                            <h3 class="book-title">${book[0]}</h3>
+                            <p class="book-author">${book[1]}</p>
+                            <p class="total-pages">Total Pages: ${book[2]}</p>
+                            <p>File Type: ${book[4]}</p>
+                        `;
+                        card.onclick = () => window.open(book[5], '_blank');
+                        bookList.appendChild(card);
+                    });
+                })
+                .catch(error => console.error('Error fetching books:', error));
+        }
+
+        document.addEventListener("DOMContentLoaded", loadBooks);
+    </script>
+</body>
+</html>
