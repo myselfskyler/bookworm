@@ -3,194 +3,522 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Haven - Choose Your Option</title>
+    <title>Fictional Books - Bookworm</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Georgia', serif;
+            background-color: #fff8e1;
+            color: #4a2c00;
+            margin: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            filter: sepia(20%) saturate(70%) brightness(90%);
+        }
+        .navbar {
+            width: 80%;
+            max-width: 1000px;
+            background: #8b5e3c;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .navbar .brand {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        .navbar .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        .navbar a, .navbar button {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .navbar a:hover, .navbar button:hover {
+            color: #f9e8c9;
+        }
+        .navbar .hamburger {
+            display: none;
+            font-size: 24px;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .navbar .search-container {
+            display: flex;
+            align-items: center;
+        }
+        .navbar input[type="text"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            margin-left: 10px;
+            background: #f9e8c9;
+            color: #4a2c00;
+        }
+        .navbar .search-icon {
+            display: none;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+        }
+        .controls {
+            width: 80%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .sort, .filter {
+            display: flex;
             flex-direction: column;
         }
+        select {
+            padding: 8px;
+            border: 1px solid #8b5e3c;
+            border-radius: 5px;
+            background: #fef8e6;
+            color: #4a2c00;
+            margin: 5px 0;
+        }
         .container {
-            background: white;
-            padding: 20px;
+            width: 80%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .book-card {
+            background: #f9e8c9;
+            padding: 15px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 400px;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-        .input-box, .file-upload {
+        .book-card:hover {
+            transform: scale(1.05);
+        }
+        .book-card img {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
+            height: 250px;
+            object-fit: cover;
             border-radius: 5px;
+            margin-bottom: 10px;
+            display: block;
         }
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background: #4CAF50;
+        .upload-btn {
+            background-color: #8b5e3c;
             color: white;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            margin: 20px 0;
+            font-size: 16px;
         }
-        .btn:hover {
-            background: #45a049;
+        .upload-btn:hover {
+            background-color: #6b4e31;
         }
-        .hidden {
-            display: none;
-        }
-        .book-details {
+        #reader-container {
             margin-top: 20px;
+            width: 80%;
+            max-width: 1000px;
         }
-        .book-cover {
-            max-width: 100%;
-            height: auto;
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: #8b5e3c;
+                border-radius: 0 0 5px 5px;
+                padding: 10px 0;
+            }
+            .navbar .nav-links.active {
+                display: flex;
+            }
+            .navbar a, .navbar button {
+                margin: 10px 0;
+                text-align: center;
+            }
+            .navbar .hamburger {
+                display: block;
+            }
+            .navbar .search-container input[type="text"] {
+                display: none;
+            }
+            .navbar .search-icon {
+                display: block;
+            }
+            .controls {
+                flex-direction: column;
+                width: 90%;
+            }
+            .container {
+                grid-template-columns: 1fr;
+                width: 90%;
+            }
+            .book-card img {
+                height: 200px;
+            }
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script>
-        let uploadedFile = null;
-
-        function showSuccessMessage(event) {
-            uploadedFile = event.target.files[0];
-            if (uploadedFile) {
-                document.getElementById('success-message').classList.remove('hidden');
-                document.getElementById('start-reading-btn').classList.remove('hidden');
-                fetchBookDetails(uploadedFile);
-                document.getElementById('file-upload-section').classList.add('hidden');
-                document.getElementById('book-details').classList.remove('hidden');
-            }
-        }
-
-        async function fetchBookDetails(file) {
-            const fileReader = new FileReader();
-            
-            fileReader.onload = async function() {
-                const pdfData = new Uint8Array(this.result);
-                const pdf = await pdfjsLib.getDocument(pdfData).promise;
-
-                // Get number of pages
-                const totalPages = pdf.numPages;
-
-                // Display total pages
-                document.getElementById('total-pages').innerText = `Total Pages: ${totalPages}`;
-
-                // Extract cover image (if available in the PDF)
-                const page = await pdf.getPage(1);
-                const viewport = page.getViewport({ scale: 1 });
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-
-                const context = canvas.getContext('2d');
-                await page.render({ canvasContext: context, viewport }).promise;
-
-                // Convert canvas to image
-                const imgSrc = canvas.toDataURL();
-                document.getElementById('book-cover').src = imgSrc;
-
-                // Get metadata
-                const metadata = await pdf.getMetadata();
-                document.getElementById('book-author').innerText = `Author Name: ${metadata.info.Author || 'Unknown Author'}`;
-                document.getElementById('book-title').innerText = `Title: ${metadata.info.Title || 'Unknown Title'}`;
-                
-                // You can also store this information if needed for later use
-            };
-
-            fileReader.readAsArrayBuffer(file);
-        }
-
-        function openUploadedFile() {
-            if (uploadedFile) {
-                const fileURL = URL.createObjectURL(uploadedFile);
-                window.open(fileURL, '_blank');
-            }
-        }
-
-        function showButton(inputId, buttonId) {
-            let input = document.getElementById(inputId);
-            let button = document.getElementById(buttonId);
-            if (input.value.trim() !== "") {
-                button.classList.remove('hidden');
-            } else {
-                button.classList.add('hidden');
-            }
-        }
-
-        function redirectToCategory() {
-            let category = document.getElementById('category-select').value;
-            if (category === 'fictional') {
-                window.location.href = 'fiction.html';
-            } else if (category === 'non-fictional') {
-                window.location.href = 'nonfiction.html';
-            }
-        }
-
-        function searchBook() {
-            const bookName = document.getElementById('search-book-name').value.trim();
-            const authorName = document.getElementById('search-author-name').value.trim();
-
-            if (bookName || authorName) {
-                // Here you can implement the search functionality
-                // For now, we'll just display a message
-                alert(`Searching for book: ${bookName} by author: ${authorName}`);
-                // You can replace the alert with an actual search function
-            } else {
-                alert('Please enter a book name or author name to search.');
-            }
-        }
-
-    </script>
+    <!-- Load Parse SDK -->
+    <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    <!-- Load PDF.js -->
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h2>Choose Your Option</h2>
-        
-        <label>Select Category:</label>
-        <select id="category-select" class="input-box" onchange="redirectToCategory()">
-            <option value="" disabled selected>Choose Interest</option>
-            <option value="fictional">Fictional</option>
-            <option value="non-fictional">Non-Fictional</option>
-        </select>
-
-        <label>Search Book by Name and Author:</label>
-        <input type="text" id="search-book-name" class="input-box" placeholder="Enter book or Author Name" onkeyup="showButton('search-book-input', 'search-book-name')">
-
-       <button id="search-book-btn" class="btn hidden" onclick="searchBook()">Search Book</button>
-<br>
-<br>
-        <label>Find the Right Book:</label>
-        <input type="text" id="find-book-input" class="input-box" placeholder="Enter your question or problem" onkeyup="showButton('find-book-input', 'find-book-btn')">
-        <button id="find-book-btn" class="btn hidden">Find Book</button>
-
-        <br>
-        <br>
-         <label>Learn Something New:</label>
-        <input type="text" id="learn-input" class="input-box" placeholder="Enter niche or category" onkeyup="showButton('learn-input', 'learn-btn')">
-        <button id="learn-btn" class="btn hidden">Learn</button>
-        <br>
-        <br>
-        <div id="file-upload-section">
-          <label>Upload Your Book (PDF, Word, Document):</label>
-          <input type="file" class="file-upload" accept=".pdf,.doc,.docx" onchange="showSuccessMessage(event)">
-          <p id="success-message" class="hidden" style="color: green;">Upload successful! Click 'Start Reading' to continue.</p>
-          <button id="start-reading-btn" class="btn hidden" onclick="openUploadedFile()">Start Reading</button>
-      </div>
-
-      <!-- Book Details Section -->
-      <div id="book-details" class="book-details hidden">
-          <h3 id="book-title">Title:</h3>
-          <h4 id="book-author">Author Name:</h4>
-          <img id="book-cover" class="book-cover hidden" alt="Book Cover">
-          <p id="total-pages"></p>
-      </div>
-
+    <nav class="navbar">
+        <a href="./home.html" class="brand">Bookworm</a>
+        <div class="nav-links" id="navLinks">
+            <a href="./home.html">Home</a>
+            <a href="./upload-own.html">Upload</a>
+            <a href="./profile.html">Profile</a>
+            <button onclick="logout()">Logout</button>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search books..." onkeyup="searchBooks(this.value)">
+                <span class="search-icon" onclick="toggleSearch()">🔍</span>
+            </div>
+        </div>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+    </nav>
+    
+    <h2>Fictional Books</h2>
+    <div class="controls">
+        <div class="sort">
+            <label>Sort By:</label>
+            <select id="sortOption" onchange="loadBooks()">
+                <option value="title_asc">Title (A-Z)</option>
+                <option value="title_desc">Title (Z-A)</option>
+                <option value="author_asc">Author Name (A-Z)</option>
+                <option value="author_desc">Author Name (Z-A)</option>
+                <option value="date_desc">Publication Date (Newest First)</option>
+                <option value="date_asc">Publication Date (Oldest First)</option>
+                <option value="rating_desc">Ratings (Highest to Lowest)</option>
+                <option value="rating_asc">Ratings (Lowest to Highest)</option>
+                <option value="pages_desc">Page Count (High to Low)</option>
+                <option value="pages_asc">Page Count (Low to High)</option>
+                <option value="popularity_desc">Popularity (Most Read)</option>
+                <option value="popularity_asc">Popularity (Least Read)</option>
+            </select>
+        </div>
+        <div class="filter">
+            <label>Filter By:</label>
+            <select id="filterGenre" onchange="loadBooks()">
+                <option value="">All Genres</option>
+                <option value="Fiction">Fiction</option>
+                <option value="Non-fiction">Non-fiction</option>
+                <option value="Mystery">Mystery</option>
+                <option value="Sci-fi">Sci-fi</option>
+                <option value="Fantasy">Fantasy</option>
+                <option value="Romance">Romance</option>
+                <option value="Horror">Horror</option>
+                <option value="Biography">Biography</option>
+            </select>
+            <select id="filterAuthor" onchange="loadBooks()">
+                <option value="">All Authors</option>
+                <!-- Dynamically populated -->
+            </select>
+            <select id="filterYear" onchange="loadBooks()">
+                <option value="">All Years</option>
+                <!-- Dynamically populated -->
+            </select>
+            <select id="filterLanguage" onchange="loadBooks()">
+                <option value="">All Languages</option>
+                <option value="Hindi">Hindi</option>
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+            </select>
+            <select id="filterRating" onchange="loadBooks()">
+                <option value="">All Ratings</option>
+                <option value="4">4+ Stars</option>
+                <option value="3">3+ Stars</option>
+            </select>
+            <select id="filterReadStatus" onchange="loadBooks()">
+                <option value="">All Statuses</option>
+                <option value="Read">Read</option>
+                <option value="Unread">Unread</option>
+                <option value="Reading">Reading</option>
+                <option value="Wishlist">Wishlist</option>
+            </select>
+        </div>
     </div>
+    <div class="container" id="book-list"></div>
+
+    <div id="reader-container"></div>
+
+    <script>
+        // Initialize Parse with your Back4App credentials
+        Parse.initialize("XBUAxTW6mBmWLeBRIJDxnvODM6rDta4RFRZTAJRZ", "SUIipfsF33r4h2KQ9z7hXRHNvfdrCV86dOvSRd4H");
+        Parse.serverURL = "https://parseapi.back4app.com/";
+
+        // Toggle mobile menu
+        function toggleMenu() {
+            const navLinks = document.getElementById("navLinks");
+            navLinks.classList.toggle("active");
+        }
+
+        // Toggle search input on mobile
+        function toggleSearch() {
+            const searchInput = document.getElementById("searchInput");
+            searchInput.style.display = searchInput.style.display === "block" ? "none" : "block";
+        }
+
+        // Trigger file upload input
+        function triggerUpload() {
+            const currentUser = Parse.User.current();
+            if (!currentUser) {
+                alert("Please log in to upload a book!");
+                window.location.href = "login.html";
+                return;
+            }
+            document.getElementById("fileUpload").click();
+        }
+
+        // Open PDF reader
+        function openReader(fileUrl, title) {
+            const readerDiv = document.createElement("div");
+            readerDiv.innerHTML = `<h3>${title}</h3><canvas id="pdfCanvas"></canvas>`;
+            document.getElementById("reader-container").innerHTML = "";
+            document.getElementById("reader-container").appendChild(readerDiv);
+
+            pdfjsLib.getDocument(fileUrl).promise.then(pdf => {
+                pdf.getPage(1).then(page => {
+                    const canvas = document.getElementById("pdfCanvas");
+                    const context = canvas.getContext("2d");
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    page.render({ canvasContext: context, viewport: viewport });
+                });
+            }).catch(error => {
+                console.error("Error loading PDF:", error);
+                alert("Failed to load PDF: " + error.message);
+            });
+        }
+
+        // Handle file upload
+        async function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const currentUser = Parse.User.current();
+            if (!currentUser) {
+                alert("Please log in to upload a book!");
+                return;
+            }
+
+            const parseFile = new Parse.File(file.name, file);
+            try {
+                await parseFile.save();
+                const Book = Parse.Object.extend("Books");
+                const book = new Book();
+                book.set("title", file.name.replace(/\.[^/.]+$/, ""));
+                book.set("author", "Unknown");
+                book.set("pages", 0);
+                book.set("category", "Fiction");
+                book.set("file", parseFile);
+                book.set("uploadedBy", currentUser);
+                book.set("publicationDate", new Date());
+                book.set("rating", 0);
+                book.set("readCount", 0);
+                book.set("language", "English");
+
+                const savedBook = await book.save();
+                const shareLink = `https://yourbookwormsite.com/book/${savedBook.id}`;
+                book.set("shareLink", shareLink);
+                await book.save();
+
+                loadBooks();
+                alert("Book uploaded successfully! Share link: " + shareLink);
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Failed to upload book: " + error.message);
+            }
+        }
+
+        // Search books
+        function searchBooks(query) {
+            loadBooks(query);
+        }
+
+        // Load and display books with sort and filter
+        async function loadBooks(searchQuery = "") {
+            const Book = Parse.Object.extend("Books");
+            const query = new Parse.Query(Book);
+            const currentUser = Parse.User.current();
+
+            // Apply filters
+            const genre = document.getElementById("filterGenre").value;
+            if (genre) query.equalTo("category", genre);
+
+            const author = document.getElementById("filterAuthor").value;
+            if (author) query.equalTo("author", author);
+
+            const year = document.getElementById("filterYear").value;
+            if (year) query.equalTo("publicationYear", parseInt(year));
+
+            const language = document.getElementById("filterLanguage").value;
+            if (language) query.equalTo("language", language);
+
+            const rating = document.getElementById("filterRating").value;
+            if (rating) query.greaterThanOrEqualTo("rating", parseInt(rating));
+
+            const readStatus = document.getElementById("filterReadStatus").value;
+            if (readStatus && currentUser) {
+                const readChapters = currentUser.get("readChapters") || {};
+                const bookIds = Object.keys(readChapters);
+                if (readStatus === "Read") {
+                    query.containedIn("objectId", bookIds.filter(id => readChapters[id].length === document.querySelectorAll(`#chapterList li[data-book-id="${id}"]`).length));
+                } else if (readStatus === "Unread") {
+                    query.notContainedIn("objectId", bookIds);
+                } else if (readStatus === "Reading") {
+                    query.containedIn("objectId", bookIds.filter(id => readChapters[id].length > 0 && readChapters[id].length < document.querySelectorAll(`#chapterList li[data-book-id="${id}"]`).length));
+                } else if (readStatus === "Wishlist") {
+                    query.containedIn("objectId", currentUser.get("wishlist") || []);
+                }
+            }
+
+            // Apply search
+            if (searchQuery) {
+                query.matches("title", new RegExp(searchQuery, "i"));
+            }
+
+            // Apply sort
+            const sortOption = document.getElementById("sortOption").value;
+            const [field, direction] = sortOption.split("_");
+            if (direction === "asc") {
+                query.ascending(field === "date" ? "publicationDate" : field);
+            } else {
+                query.descending(field === "date" ? "publicationDate" : field);
+            }
+
+            try {
+                const books = await query.find();
+                const bookList = document.getElementById("book-list");
+                bookList.innerHTML = "";
+
+                // Populate filter options dynamically
+                const authors = [...new Set(books.map(b => b.get("author")))];
+                const years = [...new Set(books.map(b => b.get("publicationDate")?.getFullYear()))].filter(y => y);
+                populateFilterOptions("filterAuthor", authors);
+                populateFilterOptions("filterYear", years);
+
+                for (const book of books) {
+                    const fileUrl = book.get("file").url();
+                    const pdf = await pdfjsLib.getDocument(fileUrl).promise;
+                    const page = await pdf.getPage(1);
+                    const canvas = document.createElement("canvas");
+                    const context = canvas.getContext("2d");
+                    const viewport = page.getViewport({ scale: 0.5 });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                    const bookCard = document.createElement("div");
+                    bookCard.className = "book-card";
+                    bookCard.innerHTML = `
+                        <img src="${canvas.toDataURL('image/jpeg')}" alt="Cover Image">
+                        <h3 class="book-title">${book.get("title")}</h3>
+                        <p class="book-author">${book.get("author")}</p>
+                        <p class="total-pages">Pages: ${book.get("pages")}</p>
+                    `;
+                    bookCard.onclick = () => openReader(fileUrl, book.get("title"));
+                    bookList.appendChild(bookCard);
+                }
+            } catch (error) {
+                console.error("Error loading books:", error);
+                alert("Failed to load books: " + error.message);
+            }
+        }
+
+        // Populate filter dropdowns dynamically
+        function populateFilterOptions(selectId, options) {
+            const select = document.getElementById(selectId);
+            const currentValue = select.value;
+            select.innerHTML = `<option value="">All ${selectId.replace("filter", "")}s</option>`;
+            options.sort().forEach(option => {
+                const opt = document.createElement("option");
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+            select.value = currentValue || "";
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await Parse.User.logOut();
+                alert("Logged out successfully!");
+                window.location.href = "login.html";
+            } catch (error) {
+                console.error("Logout error:", error);
+                alert("Logout failed: " + error.message);
+            }
+        }
+
+        // Load books when page loads
+        loadBooks();
+
+        // Handle shared link from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get("id");
+        if (bookId) {
+            const Book = Parse.Object.extend("Books");
+            const query = new Parse.Query(Book);
+            query.get(bookId).then(book => {
+                openReader(book.get("file").url(), book.get("title"));
+            }).catch(error => {
+                console.error("Error loading shared book:", error);
+                alert("Failed to load shared book: " + error.message);
+            });
+        }
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nonfiction Books</title>
+  <script src="script.js"></script>
+</head>
+<body>
+  <h1>Nonfiction Books</h1>
+  <div id="book-list"></div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      getBooksByGenre("nonfiction", (books) => {
+        const bookList = document.getElementById("book-list");
+        books.forEach((book) => {
+          const bookItem = document.createElement("p");
+          bookItem.textContent = `${book.title} by ${book.author} (${book.language})`;
+          bookList.appendChild(bookItem);
+        });
+      });
+    });
+  </script>
 </body>
 </html>
