@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.5s;
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .progress {
+            height: 20px;
+            background-color: #76c7c0;
+            width: 0%;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <h1>User Profile</h1>
+    <img src="default-profile-pic.jpg" alt="Profile Picture" class="profile-pic" id="profilePic">
+    <input type="file" accept="image/*" onchange="changeProfilePic(event)">
+    
+    <h2>Location</h2>
+    <input type="text" id="state" placeholder="Enter your state">
+    <input type="text" id="country" placeholder="Enter your country">
+
+    <h2>Reading Progress</h2>
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+    <button onclick="updateProgress()">Update Progress</button>
+
+    <p id="message"></p>
+
+    <h2>Current Book</h2>
+    <input type="text" id="currentBook" placeholder="Enter the current book title">
+    
+    <button onclick="toggleTheme()">Toggle Reading Theme</button>
+</div>
+
+<script>
+    let booksRead = 0;
+
+    function changeProfilePic(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            document.getElementById('profilePic').src = e.target.result;
+        }
+        
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function updateProgress() {
+        booksRead += parseInt(prompt("How many books have you read?"));
+        
+        if (booksRead > 100) booksRead = 100; // Cap at 100
+        
+        const progressElement = document.getElementById('progress');
+        progressElement.style.width = booksRead + '%';
+        
+        if (booksRead === 100) {
+            document.getElementById('message').innerText = "You are a bookworm!";
+        } else {
+            document.getElementById('message').innerText = "";
+        }
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.body.style.backgroundColor === 'black' ? 'light' : 'dark';
+        
+        if (currentTheme === 'dark') {
+            document.body.style.backgroundColor = '#f4f4f4';
+            document.body.style.color = '#333';
+        } else {
+            document.body.style.backgroundColor = 'black';
+            document.body.style.color = 'white';
+        }
+        
+        // Simulate DND mode
+        if (currentTheme === 'dark') {
+            alert("DND mode is ON");
+        } else {
+            alert("DND mode is OFF");
+        }
+    }
+</script>
+
+</body>
+</html>
